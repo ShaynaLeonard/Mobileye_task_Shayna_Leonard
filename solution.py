@@ -175,10 +175,47 @@ class Solution:
         missing = protocols_in_session - protocols_in_json
         return list(missing)
 
+    def hex_length_in_bytes(self, hex_string):
+        hex_string = hex_string.replace(" ", "")
+        num_hex_digits = len(hex_string)
+        num_bytes = (num_hex_digits + 1) // 2
+        return num_bytes
+
     # Question 5: Which protocols have at least one message in the session with mismatch between the expected size integer and the actual message content size?
     def q5(self) -> List[str]:
-        pass
+        #TODO - edge case 0 bytes
+        protocols = []
+        try:
+            with open(self.data_file_path, "r") as data_file:
+                for line in data_file:
+                    words = line.split(",")
+                    bytes_count = int(words[3].split()[0])
+                    if len(words) < 5: #there is no message at all
+                        if bytes_count != 0:
+                            protocols.append(words[2].strip())
+                    else:
+                        bytes_in_message = self.hex_length_in_bytes(words[4])-1
+                        if bytes_in_message != bytes_count:
+                            protocols.append(protocols.append(words[2].strip()))
+            return protocols
+
+        except FileNotFoundError:
+            print(f"Error: The file '{self.data_file_path}' was not found.")
+        except PermissionError:
+            print(f"Error: Permission denied when trying to open '{self.data_file_path}'.")
+        except IsADirectoryError:
+            print(f"Error: Expected a file but found a directory: '{self.data_file_path}'.")
+        except IOError as e:
+            print(f"Error: An I/O error occurred: {e}")
+        except Exception as e:
+            # This captures any other exceptions not caught by the above
+            print(f"An unexpected error occurred: {e}")
+
 
     # Question 6: Which protocols are marked as non dynamic_size in protocol.json, but appear with inconsistent expected message sizes Integer in the data file?
     def q6(self) -> List[str]:
         pass
+
+if __name__ == "__main__":
+    sol = Solution("data.txt", "protocol.json")
+    print(sol.q5())
